@@ -13,28 +13,39 @@ target_link_libraries(cereal-xtensor
   INTERFACE
     cereal
     xtensor)
-install(
-    DIRECTORY include/
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+install(TARGETS cereal-xtensor
+  EXPORT cereal-xtensor-targets
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+  RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+  INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
-install(
-    TARGETS cereal-xtensor
-    EXPORT cereal-xtensor-targets
+
+install(DIRECTORY include/cereal-xtensor
+  DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+  FILES_MATCHING
+    PATTERN "*.hpp"
+    PATTERN "*.h"
 )
-install(
-    EXPORT cereal-xtensor-targets
-    FILE cereal-xtensor-targets.cmake
-    NAMESPACE cereal_xtensor::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/cereal-xtensor
+
+write_basic_package_version_file(
+  "${CMAKE_CURRENT_BINARY_DIR}/cereal-xtensor-config-version.cmake"
+  VERSION ${PROJECT_VERSION}
+  COMPATIBILITY AnyNewerVersion
 )
-include(CMakePackageConfigHelpers)
+
+install(EXPORT cereal-xtensor-targets
+  FILE      cereal-xtensor-targets.cmake
+  NAMESPACE cereal-xtensor::
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/cereal-xtensor
+)
 configure_package_config_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/cmake/cereal-xtensor-config.cmake.in
-    ${CMAKE_CURRENT_BINARY_DIR}/cereal-xtensor-config.cmake
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/cereal-xtensor
+  cmake/cereal-xtensor-config.cmake.in
+  "${CMAKE_CURRENT_BINARY_DIR}/cereal-xtensor-config.cmake"
+  INSTALL_DESTINATION ${CMAKE_INSTALL_DATADIR}/cereal-xtensor
 )
-install(
-    FILES
-        ${CMAKE_CURRENT_BINARY_DIR}/cereal-xtensor-config.cmake
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/cereal-xtensor
+install(FILES
+  "${CMAKE_CURRENT_BINARY_DIR}/cereal-xtensor-config.cmake"
+  "${CMAKE_CURRENT_BINARY_DIR}/cereal-xtensor-config-version.cmake"
+  DESTINATION ${CMAKE_INSTALL_DATADIR}/cereal-xtensor
 )

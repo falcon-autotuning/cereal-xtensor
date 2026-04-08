@@ -1,0 +1,6 @@
+.nuget_api_key 
+build/
+vcpkg/
+vcpkg_installed/
+compile_commands.json
+

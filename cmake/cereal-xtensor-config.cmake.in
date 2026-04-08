@@ -1,0 +1,10 @@
+@PACKAGE_INIT@
+
+include(CMakeFindDependencyMacro)
+
+find_dependency(cereal REQUIRED)
+find_dependency(xtensor REQUIRED)
+
+include("${CMAKE_CURRENT_LIST_DIR}/cereal-xtensor-targets.cmake")
+
+check_required_components(cereal-xtensor)

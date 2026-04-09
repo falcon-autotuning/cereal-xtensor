@@ -26,4 +26,4 @@ jobs:
           FEED_URL: ${{ secrets.NUGET_FEED_URL }}
           FEED_NAME: ${{ secrets.NUGET_FEED_NAME }}
           USERNAME: $ {{ secrets.NUGET_USERNAME }}
-        run: make test
+        run: make build-release

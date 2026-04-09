@@ -3,4 +3,4 @@ build/
 vcpkg/
 vcpkg_installed/
 compile_commands.json
-
+.nuget-credentials

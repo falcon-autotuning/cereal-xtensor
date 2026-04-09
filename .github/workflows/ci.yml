@@ -23,5 +23,7 @@ jobs:
       - name: Run tests (with Docker)
         env:
           NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
-          NUGET_FEED: ${{ secrets.NUGET_FEED_URL }}
+          FEED_URL: ${{ secrets.NUGET_FEED_URL }}
+          FEED_NAME: ${{ secrets.NUGET_FEED_NAME }}
+          USERNAME: $ {{ secrets.NUGET_USERNAME }}
         run: make test

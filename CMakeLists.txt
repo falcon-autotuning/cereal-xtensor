@@ -20,6 +20,8 @@ install(TARGETS cereal-xtensor
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
   INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
 
 install(DIRECTORY include/cereal-xtensor
   DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}

@@ -25,11 +25,27 @@ ifeq ($(OS),Windows_NT)
 endif
 
 # vcpkg and NuGet binary cache
+ENV_FILE := .nuget-credentials
+ifeq ($(wildcard $(ENV_FILE)),)
+  $(info [Makefile] $(ENV_FILE) not found, skipping environment sourcing)
+else
+  include $(ENV_FILE)
+  export $(shell sed 's/=.*//' $(ENV_FILE) | xargs)
+  $(info [Makefile] Loaded environment from $(ENV_FILE))
+endif
+# ── Paths ─────────────────────────────────────────────────────────────────────
 VCPKG_ROOT ?= $(CURDIR)/vcpkg
 VCPKG_TOOLCHAIN ?= $(VCPKG_ROOT)/scripts/buildsystems/vcpkg.cmake
 VCPKG_INSTALLED_DIR ?= $(CURDIR)/vcpkg_installed
-NUGET_FEED ?= https://pkgs.dev.azure.com/falcon-autotuning/_packaging/falcon-autotuning/nuget/v3/index.json
-VCPKG_BINARY_SOURCES ?= clear;nuget,$(NUGET_FEED),readwrite
+FEED_URL ?= 
+NUGET_API_KEY ?=
+FEED_NAME ?= 
+USERNAME ?=
+ifeq ($(strip $(FEED_URL)),)
+  CMAKE_VCPKG_BINARY_SOURCES :=
+else
+  CMAKE_VCPKG_BINARY_SOURCES := -DVCPKG_BINARY_SOURCES="clear;nuget,$(FEED_URL),readwrite"
+endif
 
 BUILD_DIR_DEBUG := build/debug
 BUILD_DIR_RELEASE := build/release
@@ -80,8 +96,8 @@ vcpkg-bootstrap:
 	fi
 
 setup-nuget-auth:
-	@if [ ! -f .nuget_api_key ] && [ -z "$$NUGET_API_KEY" ]; then \
-		echo "No .nuget_api_key or NUGET_API_KEY found, skipping NuGet setup (local-only build, no binary cache)."; \
+	@if [ -z "$$NUGET_API_KEY" ]; then \
+		echo "No NUGET_API_KEY found, skipping NuGet setup (local-only build, no binary cache)."; \
 		exit 0; \
 	fi
 	@echo "Setting up NuGet authentication for vcpkg binary caching..."
@@ -89,11 +105,9 @@ setup-nuget-auth:
 		echo "Error: mono is not installed. Please install mono (e.g., 'sudo pacman -S mono' on Arch, 'sudo apt install mono-complete' on Ubuntu)."; \
 		exit 1; \
 	fi
-	@mkdir -p $$HOME/.nuget/NuGet
-	@API_KEY=$$(if [ -f .nuget_api_key ]; then cat .nuget_api_key; else echo $$NUGET_API_KEY; fi); \
-	NUGET_EXE=$$(vcpkg fetch nuget | tail -n1); \
-	mono "$$NUGET_EXE" sources remove -Name "falcon-autotuning" || true; \
-	mono "$$NUGET_EXE" sources add -Name "falcon-autotuning" -Source "$(NUGET_FEED)" -Username "ADO" -Password "$$API_KEY"
+	@NUGET_EXE=$$(vcpkg fetch nuget | tail -n1); \
+	mono "$$NUGET_EXE" sources remove -Name "$(FEED_NAME)" || true; \
+	mono "$$NUGET_EXE" sources add -Name "$(FEED_NAME)" -Source "$(FEED_URL)" -Username "$(USERNAME)" -Password "$(NUGET_API_KEY)"
 
 .PHONY: vcpkg-install-deps
 vcpkg-install-deps: setup-nuget-auth 
@@ -130,7 +144,7 @@ configure-debug: check-vcpkg
 		-DENABLE_PCH=ON \
 		-DCMAKE_C_COMPILER=clang \
 		-DCMAKE_CXX_COMPILER=clang++ \
-		-DVCPKG_BINARY_SOURCES="$(VCPKG_BINARY_SOURCES)" \
+		$(CMAKE_VCPKG_BINARY_SOURCES) \
 		-G $(CMAKE_GENERATOR)
 	@echo "✓ Debug build configured"
 
@@ -146,7 +160,7 @@ configure-release: check-vcpkg
 		-DENABLE_PCH=ON \
 		-DCMAKE_C_COMPILER=clang \
 		-DCMAKE_CXX_COMPILER=clang++ \
-		-DVCPKG_BINARY_SOURCES="$(VCPKG_BINARY_SOURCES)" \
+		$(CMAKE_VCPKG_BINARY_SOURCES) \
 		-G $(CMAKE_GENERATOR)
 	@echo "✓ Release build configured"
 
